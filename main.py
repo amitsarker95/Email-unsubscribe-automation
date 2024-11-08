@@ -2,7 +2,10 @@ from dotenv import load_dotenv
 import imaplib
 import email
 from bs4 import BeautifulSoup
+import requests
 import os
+
+
 load_dotenv()
 
 
@@ -22,6 +25,19 @@ def extract_links_from_html(html_content):
     links = [link["href"] for link in soup.findall("a", href=True) if "unsubscribe" in link["href"].lower()]
 
     return links
+
+
+def click_link(link):
+    try:
+        response = requests.get(link)
+        if response.status_code == 200:
+            print("Successfully clicked", link)
+        else:
+            print("Failed to click", link, response.status_code)
+    except Exception as e:
+        print("Error", link, str(e), response.status_code)
+
+
 
 
 def search_email():
@@ -52,5 +68,13 @@ def search_email():
     mail.logout()
     return links
 
+def save_links(links):
+    with open("links.txt", "w") as f:
+        f.write('\n'.join(links))
+
 links = search_email()
-print(links)
+
+for link in links:
+    click_link(link)
+
+save_links(links)
